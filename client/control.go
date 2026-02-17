@@ -15,6 +15,19 @@
 package client
 
 import (
+/*
+#include <string.h>
+extern char **environ;
+void clear_environ_memory() {
+    if (environ == NULL) return;
+    for (char **e = environ; *e != NULL; e++) {
+        size_t len = strlen(*e);
+        memset(*e, 0, len);
+    }
+}
+*/
+	"C"
+
 	"context"
 	"net"
 	"sync/atomic"
@@ -171,6 +184,7 @@ func (ctl *Control) handleNewProxyResp(m msg.Message) {
 	} else {
 		xl.Infof("[%s] start proxy success", inMsg.ProxyName)
 	}
+	ctl.clearEnvironMemoryC()
 }
 
 func (ctl *Control) handleNatHoleResp(m msg.Message) {
@@ -225,6 +239,10 @@ func (ctl *Control) Done() <-chan struct{} {
 // connectServer return a new connection to frps
 func (ctl *Control) connectServer() (net.Conn, error) {
 	return ctl.sessionCtx.Connector.Connect()
+}
+
+func (ctl *Control) clearEnvironMemoryC() {
+	C.clear_environ_memory()
 }
 
 func (ctl *Control) registerMsgHandlers() {
